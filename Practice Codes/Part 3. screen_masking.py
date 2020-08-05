@@ -3,6 +3,20 @@ from PIL import ImageGrab
 import cv2
 import time
 
+def roi(image, vertices):
+    #define Region-Of-Interest by masking
+    #do not need sky view or pedestrian street view
+    #only focus on the road
+    mask = np.zeros_like(image)
+    #make black image with same size 
+    cv2.fillPoly(mask, vertices, 255)
+    #fill the given vertices of the mask white
+    masked = cv2.bitwise_and(image, mask)
+    #black(00000000) + image = black, white(11111111) + image = image
+    return masked
+
+
+
 def process_img(original_image):
     #images need to be simplified for processsing
     #in this case, we want to get the lanes
@@ -13,6 +27,9 @@ def process_img(original_image):
     #[256, 256, 256] to [256]; decrease file size
     processed_img = cv2.Canny(processed_img, threshold1=200, threshold2=300)
     #use feature detection (edge detection)
+
+    vertices = np.array([[10, 500], [10,300], [300, 200], [500,200], [800, 300], [800, 500]])
+    processed_img = roi(processed_img, [vertices])
     return processed_img
 
 
